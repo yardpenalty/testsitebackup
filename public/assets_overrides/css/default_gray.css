@@ -1,0 +1,313 @@
+/***
+Hackney theme - brown.css was used a base
+***/
+/***
+Hackney Color Changes ***********************************************
+
+623f18 --> ffffff 
+764c1d --> ffffff
+35220d --> 272727
+39250e --> 272727
+412a10 --> 272727 
+5a3a16 --> 939393
+7f511f --> 939393
+8b5922 --> 939393
+311f0c --> 939393
+e02222 --> e6e6e6
+4e3112 --> e6e6e6
+d18d42 --> e6e6e6
+
+ALL Other Changes must go in CUSTOM.CSS
+
+*********************************************************************/
+body {
+  background-color: #ffffff !important;
+}
+/***
+Page header
+***/
+.header {
+  filter: none !important;
+  background-image: none !important;
+  background-color: #272727 !important;
+}
+.header .btn-navbar {
+  background-color: #272727 !important;
+}
+.header .navbar-nav .dropdown-toggle:hover,
+.header .navbar-nav .dropdown.open .dropdown-toggle {
+  background-color: #939393 !important;
+}
+.header .navbar-nav li.dropdown .dropdown-toggle i {
+  color: #e6e6e6 !important;
+}
+/***
+Hor menu
+***/
+
+
+.header .hor-menu ul.nav li.open > a,
+.header .hor-menu ul.nav li > a:hover,
+.header .hor-menu ul.nav li > a:focus {
+  color: #e6e6e6;
+  background: #939393;
+}
+
+.header .hor-menu .dropdown-menu li:hover > a,
+.header .hor-menu ul.nav li.active > a,
+.header .hor-menu ul.nav li.active > a:hover {
+  color: #e6e6e6;
+  background: #Ec2e2b !important; 
+}
+
+.header .hor-menu .dropdown-menu {  
+    background: #939393;
+}
+.header .hor-menu .dropdown-menu li > a {    
+    color: #fff;
+}
+
+.header .hor-menu .hor-menu-search-form-toggler.off {
+   background: #939393 url(../../img/hor-menu-search-close-white.png) no-repeat center;
+}
+
+.header .hor-menu .search-form {  
+  background:#939393; 
+}
+
+.header .hor-menu .search-form form input {
+  color: #e6e6e6;
+}
+
+.header .hor-menu .search-form .btn {
+  color: #e6e6e6;
+  background: url(../../img/search-icon-white.png) no-repeat center;
+}
+
+.header .hor-menu .search-form form input::-webkit-input-placeholder { /* WebKit browsers */
+    color: #e6e6e6;
+}
+.header .hor-menu .search-form form input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color: #e6e6e6;
+}
+.header .hor-menu .search-form form input::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color: #e6e6e6;
+}
+.header .hor-menu .search-form form input:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color: #e6e6e6;
+}
+/***
+Page sidebar
+***/
+.page-sidebar {
+  background-color: #ffffff;
+}
+ul.page-sidebar-menu > li > a {
+  border-top: 1px solid #935f24 !important;
+  color: #fff !important;
+}
+ul.page-sidebar-menu > li:last-child > a {
+  border-bottom: 1px solid transparent !important;
+}
+ul.page-sidebar-menu > li a i {
+  color: #9a6d3a;
+}
+ul.page-sidebar-menu > li.open > a,
+ul.page-sidebar-menu > li > a:hover,
+ul.page-sidebar-menu > li:hover > a {
+  background: #cc0000;
+}
+ul.page-sidebar-menu > li.active > a {
+  background: #fe0000 !important;
+  border-top-color: transparent !important;
+  color: #fff;
+}
+ul.page-sidebar-menu > li.active > a i {
+  color: #fff;
+}
+ul.page-sidebar-menu > li > ul.sub-menu > li:first-child > a {
+  border-top: 0px !important;
+}
+ul.page-sidebar-menu > li > ul.sub-menu > li.active > a,
+ul.page-sidebar-menu > li > ul.sub-menu > li > a:hover {
+  color: #fff !important;
+  background: #939393 !important;
+}
+ul.page-sidebar-menu > li > ul.sub-menu > li > a:hover {
+  background: #939393 !important;
+}
+/* 3rd level sub menu */
+ul.page-sidebar-menu > li > ul.sub-menu li > ul.sub-menu > li.active > a,
+ul.page-sidebar-menu > li > ul.sub-menu li > ul.sub-menu > li > a:hover,
+ul.page-sidebar-menu > li > ul.sub-menu li.open > a {
+  color: #fff !important;
+  background: #ec2e2b !important;
+}
+/* font color for all sub menu links*/
+ul.page-sidebar-menu li > ul.sub-menu > li > a {
+  color: #fff;
+}
+/* menu arrows */
+ul.page-sidebar-menu > li > a .arrow:before,
+ul.page-sidebar-menu > li > a .arrow.open:before {
+  color: #c88131 !important;
+}
+ul.page-sidebar-menu > li > ul.sub-menu a .arrow:before,
+ul.page-sidebar-menu > li > ul.sub-menu a .arrow.open:before {
+  color: #fff !important;
+}
+ul.page-sidebar-menu > li > a > .arrow.open:before {
+  color: #e6e6e6 !important;
+}
+ul.page-sidebar-menu > li.active > a .arrow:before,
+ul.page-sidebar-menu > li.active > a .arrow.open:before {
+  color: #fff !important;
+}
+/* sidebar search */
+.page-sidebar .sidebar-search input {
+  background-color: #272727 !important;
+  color: #b18d65;
+}
+.page-sidebar .sidebar-search input::-webkit-input-placeholder {
+  color: #b18d65 !important;
+}
+.page-sidebar .sidebar-search input:-moz-placeholder {
+  color: #b18d65 !important;
+}
+.page-sidebar .sidebar-search input:-ms-input-placeholder {
+  color: #b18d65 !important;
+}
+.page-sidebar .sidebar-search input {
+  background-color: #ffffff !important;
+  color: #b18d65 !important;
+}
+.page-sidebar .sidebar-search .input-box {
+  border-bottom: 1px solid #845f36 !important;
+}
+.page-sidebar .sidebar-search .submit {
+  background-image: url(../../img/search-icon-brown.png);
+}
+/***
+Sidebar toggler
+***/
+.sidebar-toggler {
+  background-image: url(../../img/sidebar-toggler-brown.jpg);
+  background-color: #272727;
+}
+/* search box bg color on expanded */
+.page-sidebar-closed .page-sidebar .sidebar-search.open .form-container {
+  background-color: #ffffff !important;
+}
+.page-sidebar-closed .page-sidebar .sidebar-search.open .form-container .remove {
+  background-image: url("../../img/sidebar-search-close-brown.png");
+}
+/* sub menu bg color on hover menu item */
+.page-sidebar-closed ul.page-sidebar-menu > li:hover .sub-menu {
+  background-color: #ffffff;
+}
+/***
+Footer 
+***/
+.footer .footer-inner {
+  color: #939393;
+}
+.footer .footer-tools .go-top {
+  background-color: #939393;
+}
+.footer .footer-tools .go-top:hover {
+  opacity: 0.7;
+  filter: alpha(opacity=70);
+}
+.footer .footer-tools .go-top i {
+  color: #e6e6e6;
+}
+/***
+Footer Layouts (new in v1.3)
+***/
+/* begin:fixed footer */
+.page-footer-fixed .footer {
+  background-color: #272727;
+}
+.page-footer-fixed .footer .footer-inner {
+  color: #e6e6e6;
+}
+.page-footer-fixed .footer .footer-tools .go-top {
+  background-color: #939393;
+}
+.page-footer-fixed .footer .footer-tools .go-top i {
+  color: #e6e6e6;
+}
+/* end:fixed footer */
+
+/* begin: boxed page */
+@media (min-width: 992px) {
+  .page-boxed {
+    background-color: #492f12 !important;
+  }
+  .page-boxed .page-container {
+    background-color: #ffffff;
+    border-left: 1px solid #976125;
+    border-bottom: 1px solid #976125;
+  }
+  .page-boxed.page-sidebar-fixed .page-container {
+    border-left: 0;
+    border-bottom: 0;
+  }
+  .page-boxed.page-sidebar-fixed .page-sidebar {
+    border-left: 1px solid #976125;
+  }
+  .page-boxed.page-sidebar-fixed.page-footer-fixed .footer {
+    background-color: #492f12 !important;
+  }
+}
+/* end: boxed page */
+/***
+Landscape phone to portrait tablet
+***/
+@media (max-width: 991px) {
+  /***
+    page sidebar
+    ***/
+  .page-sidebar {
+    background-color: #272727 !important;
+  }
+  ul.page-sidebar-menu > li > a {
+    border-top: 1px solid #fff !important;
+  }
+  ul.page-sidebar-menu > li:last-child > a {
+    border-bottom: 0 !important;
+  }
+  .page-sidebar .sidebar-search input {
+    background-color: #272727 !important;
+  }
+  ul.page-sidebar-menu > li.open > a,
+  ul.page-sidebar-menu > li > a:hover,
+  ul.page-sidebar-menu > li:hover > a {
+    background: #939393;
+  }
+}
+.tree .tree-actions {
+  display: none;     
+  position: relative;
+  margin-top: 1px;  
+  margin-left: 8px; 
+  right: 4px;        
+} 
+.tree .tree-item,
+.tree .tree-folder{
+  border:0px
+} 
+.tree .tree-folder .tree-folder-header:hover{
+  background-color:#ffffff;
+}
+.tree .tree-item:hover{
+  background-color:#ffffff;
+}
+.tree .tree-actions > i {                                           
+  border: 1px solid #939393;                
+  color: #939393;                    
+}                                                           
+.tree .tree-actions > i:hover {
+  color: #272727;                 
+  border: 1px solid #272727;      
+}                              

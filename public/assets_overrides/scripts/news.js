@@ -1,0 +1,805 @@
+var News = function () {
+  
+	var badgeCt = 0;
+	var localProfile = localStorage.getItem('profile');
+	var myNewsKey = sessionStorage.getItem('myNewsKey');
+	var notifs = sessionStorage.getItem('notifs'); 
+    var editor = localStorage.getItem('editor'); 
+	var functionCode = '';
+	var actualKey = "";
+    var hasGeneral;
+	var hasInstance;
+	var hasUrgent;
+    var urgentAhrefs = '';
+	var urgentCt = 0;
+	var newGritter = true;
+	
+var UpdateMyCookie = function(){
+	
+	var date = new Date();
+	var midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);	
+	var data = 'INSTANCE=HTHACKNEY';
+	
+	$.getJSON( "http://webservices.hthackney.com/WEB054K?callback=?",data )
+	.done(function( json ) {
+		//gets cookie of latest newsfeed id
+		 $.cookie('latestNewsKey', $.trim(json.LatestNews), midnight); 
+		 //console.log("latestnews cookie = " + $.cookie('latestNewsKey'));
+		 sessionStorage.setItem('myNewsKey', $.cookie('latestNewsKey'));		
+		 myNewsKey =  sessionStorage.getItem('myNewsKey');	
+	})	
+	.fail(function( jqXHR, textStatus, error ) {
+	var err = textStatus + ", " + error;
+	alert('Unable to Connect to Server.\n Try again Later.\n Request Failed: ' + err);
+	}); 	
+}
+/*
+*	Profile session section: 
+*
+*/
+var StorageNotifsLinks = function(){ //load newsfeed into temporary storage
+	//load hrefs into sessionStorage notifs
+	 var data = 'USER=' + localProfile +
+	    				'&INSTANCE=HTHACKNEY';
+	$.getJSON( "http://webservices.hthackney.com/WEB054A?callback=?",data )
+	.done(function( json ) {
+		 var jsonString = JSON.stringify(json);
+		 sessionStorage.removeItem('notifs');
+		 sessionStorage.setItem('notifs', jsonString);	
+		 notifs = sessionStorage.getItem('notifs');
+	     HtmlNotifs();
+	});	
+	//console.log(sessionStorage.getItem('notifs'));	
+} 
+var CheckInstances = function(array){
+	//checks to see if any unviewed notifications for ul#notifs
+	for(var i = 0; i < array.length; i++)
+	{
+		//console.log(array[i].FUNCTION);
+		if(array[i].URGENT === "Y")
+			hasUrgent = true;
+		if(array[i].FUNCTION === '*GENERAL' && array[i].VISITED !== "Y")
+			hasGeneral = true;
+		if(array[i].FUNCTION == functionCode && array[i].VISITED !== "Y")				
+			hasInstance = true;			
+	}
+}
+var SetProfile = function(u){
+	localStorage.setItem('profile', u);
+	localProfile = localStorage.getItem('profile');
+	var data = "USER=" + localProfile +
+	           "&INSTANCE=HTHACKNEY";			   
+	$.getJSON( "http://webservices.hthackney.com/WEB891?callback=?",data )
+	 .done(function( json ) {
+	     localStorage.setItem('editor', JSON.EDITOR);
+		 editor = localStorage.getItem('editor');
+	 });
+}
+/* 
+*
+* HTML Notifications:
+*
+*/
+var HtmlNotifs = function(){
+		HtmlNotifsLinks(); 
+		HtmlGritter();	 
+		HtmlBadgeCount();
+}	
+var HtmlNotifsLinks = function(){
+	//clear on rebuild
+	urgentAhrefs = [];
+    hasInstance = false;
+    hasGeneral = false;
+    hasUrgent = false;	
+	//console.log(notifs);
+	var jArray = {};
+	if(empty(notifs) == false)
+		jArray = $.parseJSON(notifs);
+		CheckInstances(jArray);
+		var tempStr = "";
+		var title = "";
+        //reset notification ul li every time 
+		$('ul#notifs').remove();
+		
+	    $("#notifications li:first").append('<ul id="notifs" class="dropdown-menu-list scroller" style="max-height: 250px; overflow: hidden; width: auto;"></ul>');
+		var ul = $('ul#notifs');
+		if(hasGeneral){ //<!-- *GENERAL //-->
+			ul.append('<li id="general" class="disabled topic"><span class="mt5l10">New Announcements</span></li>')
+		 }
+		 
+		 if(hasInstance){ //<!-- *FUNCTION //-->
+			ul.append('<li id="enhancements" class="disabled topic pages"><span class="mt5l10">New Page Enhancements</span></li>'); 
+		 }	
+		 
+		$.each(jArray, function(k, v) {
+		  
+			title = v.TITLE;
+			
+			if(v.FUNCTION === "*GENERAL"){
+				//console.log(v.URGENT);
+				if(v.URGENT == "Y"){
+					tempStr = '<a href="#NewsModal" class="urgent" title="' + title + '" onclick="remote=\'modal_news.php?USER=' + localProfile + '&PKEY=' +
+					v.PKEY + '&FUNCTION=' + encodeURIComponent(functionCode) + '\'; remote_target=\'#NewsModal .modal-body\'" role="button" data-toggle="modal"><span class="label label-icon label-danger"><i class="fa fa-bolt"></i></span>'
+					+  title.dotdotdot(35) + '</a>';
+					hasUrgent = true;
+					urgentCt++;
+					urgentAhrefs.push(tempStr);
+				}
+				else{
+					tempStr = '<a href="#NewsModal" title="' + title + '" onclick="remote=\'modal_news.php?USER=' + localProfile + '&PKEY=' +
+					v.PKEY  + '&FUNCTION=' + encodeURIComponent(functionCode) + '\'; remote_target=\'#NewsModal .modal-body\'" role="button" data-toggle="modal"><span class="label label-icon label-info"><i class="fa fa-bullhorn"></i></span>'
+					+  title.dotdotdot(35) + '</a>';
+				}						
+				$('<li class="nws">' + tempStr + '</li>').insertAfter("#general");
+			}
+			
+			if(v.FUNCTION === functionCode){
+				if(v.URGENT == "Y"){
+					tempStr = '<a href="#NewsModal" class="urgent" title="' + title + '" onclick="remote=\'modal_news.php?USER=' + localProfile + '&PKEY=' +
+					v.PKEY  + '&FUNCTION=' + encodeURIComponent(functionCode) + '\'; remote_target=\'#NewsModal .modal-body\'" role="button" data-toggle="modal"><span class="label label-icon label-danger"><i class="fa fa-bolt"></i></span>'
+					+  title.dotdotdot(35) + '</a>';
+					hasUrgent = true;
+					urgentCt++;
+					urgentAhrefs.push(tempStr);
+				}
+				else{
+					tempStr = '<a href="#NewsModal" title="' + title + '" onclick="remote=\'modal_news.php?USER=' + localProfile + '&PKEY=' +
+					v.PKEY  + '&FUNCTION=' + encodeURIComponent(functionCode) + '\'; remote_target=\'#NewsModal .modal-body\'" role="button" data-toggle="modal"><span class="label label-icon label-warning"><i class="fa fa-exclamation"></i></span>'
+					+  title.dotdotdot(35) + '</a>';	
+				}						
+				$('<li class="nws">' + tempStr + '</li>').insertAfter("#enhancements");
+			}
+		});	
+ 
+	//external link for all viewed newsfeeds that are active
+	var nws = $("#page-title").text().toUpperCase();
+	if(empty(nws))
+		nws = functionCode;
+	if(nws === "SPLASH PAGE")
+		nws = "HOME PAGE";
+	var external = '<li class="external" title="View all general announcements and page enhancements from the ' + nws + ' newsfeed"><a href="#NewsModal" onclick="remote=\'modal_newsfeed.php?USER=' + localProfile + '&FUNCTION=' +
+	encodeURIComponent(functionCode) + '\'; remote_target=\'#NewsModal .modal-body\'" role="button" data-toggle="modal">'+ 
+	'<i class="fa fa-feed"></i><span class="ml5"><strong>' + nws + ' Newsfeed</strong></span></a></li>';
+   $('ul#notifications li.external').remove();
+   $("ul#notifications").append(external);				 
+}
+var HtmlBadgeCount = function(){
+	var header = $('#header_notification_bar');
+	
+	if(header.hasClass('hidden')){ 
+		header.removeClass('hidden');
+	}
+	badgeCt = $("ul#notifs li.nws").length;		
+	if(badgeCt > 0){
+		header.find(".badge").text(badgeCt);
+		header.find('.fa-bell').removeClass('opaque');
+	}
+	else{
+		header.find('.fa-bell').addClass('opaque');	
+		header.find(".badge").addClass("hidden");
+	}
+}
+var HtmlGritter = function(){
+
+	//$.gritter.removeAll();
+	//pulsate new notifications
+	if(hasUrgent || hasGeneral || hasInstance){
+	
+	setTimeout(function () { 
+	
+	if(hasUrgent){	
+		$.extend($.gritter.options, {
+			position: 'top-left'
+		});
+		
+		if(newGritter){
+		var urgent_id = $.gritter.add({
+			// (string | mandatory) the heading of the notification
+			title: '<i class="fa fa-4x fa-bolt"></i>&nbsp;&nbsp;Urgent News!',
+			// join '  ' removes commas from array toString()
+			text: urgentAhrefs.join(" "),
+			// (string | optional) the image to display on the left
+			image: '../images/logo.png',
+			// (bool | optional) if you want it to fade out on its own or just sit there
+			sticky: true,
+			// (int | optional) the time you want it to be alive for before fading out
+			time: '',
+			// (string | optional) the class name you want to apply to that specific message
+			class_name: 'clicker'
+		});
+			newGritter = false;
+		}
+		else{
+			$("#gritter-item-1 p").html(urgentAhrefs.join(" "));
+		}
+	} 		
+	//pulsate recursively   
+	pulsatingInterval = setInterval(function() {
+		$('#header_notification_bar').pulsate({
+			color: "#ec2e2b",
+			repeat: 5
+		}); 
+		}, 6000);	
+	}, 2000);	
+	} //eof if has gritter
+	
+	 console.log("ahrefs length = " + urgentAhrefs.length);
+	if(urgentAhrefs.length == 0 && newGritter === false){
+		 $.gritter.removeAll();
+		 console.log(newGritter);
+			clearInterval(pulsatingInterval);
+	}
+	
+}    
+/*
+*
+* HTML Newsfeed(s):
+*
+*/
+var HtmlModalNewsfeed = function(){
+	  if(localProfile && functionCode){
+		  
+		  
+	  }
+}
+var HtmlModalNews = function(){
+       if(localProfile && functionCode && actualKey){
+		   
+		var data =	'USER=' + localProfile +
+			'&INSTANCE=' + functionCode +
+			'&PKEY=' + actualKey;
+	  
+		$.getJSON( "http://webservices.hthackney.com/WEB054L?callback=?",data )
+		 .done(function( json ) {
+			 $('<label class="control-label xs-small" style="margin: 10px 0px 0px -15px">HTML: </label>').insertBefore('#editorForm .btn-primary');
+
+			 if(/^Y$/i.test(editor)){
+				//CRUD capable
+				$(".editorForm").find('.md-input').val(json.HTML);
+				$("#title").val(json.TITLE);
+				//handles Authorization List for feed
+				var authlistArray = json.AUTHLST.split(','); 
+				$.each(authlistArray, function (index, value) {
+					  $('input[name="AUTHLST"][value="' + value + '"]').prop("checked", true);
+				 });	
+				//dates
+				 $('input[name="STARTDATE"]').val(json.STARTDATE);
+				 $('input[name="ENDDATE"]').val(json.ENDDATE);
+				 if(json.FUNCTION === "*GENERAL")
+					$('select[name="PAGE"][value="*GENERAL"]').prop("checked", true);
+				 else{
+					 var selected = 'select[name="PAGE"][value="'+ json.FUNCTION +'"]';
+					$(selected).prop("checked", true);
+				 }						
+				 if(/^Y$/i.test(json.ARCHIVE))
+					$('[name="ARCHIVE"]').prop("checked", true);
+				 if(/^Y$/i.test(json.ACTIVE))
+					$('[name="ACTIVE"]').prop("checked", true);
+				 if(/^Y$/i.test(json.URGENT))
+					$('input[name="URGENT"]').prop("checked", true);
+				 if($('.editorForm').hasClass('hidden'))
+					$('.editorForm').removeClass('hidden');
+				
+			 }  
+			 else{
+				if($('.newsForm').hasClass('hidden'))
+				   $('.newsForm').removeClass('hidden');
+			 }
+			 
+			 //modal-headers				 
+			 if(json.FUNCTION === "*GENERAL"){
+				if(json.URGENT === "Y")
+					$('.newsLabel').text('General Announcement: Urgent!');
+				else	
+					$('.newsLabel').text('General Announcement');
+			 }
+			 if(json.FUNCTION !== "*GENERAL"){
+				if(json.URGENT === "Y") 
+					$('.newsLabel').text('Page Enhancement: Urgent!');
+				else	
+					$('.newsLabel').text('Page Enhancement');						
+			 }	
+         	 
+			  //general user news
+			 $("#hl").html(json.HTML);
+			 $("#te").html(json.TITLE);
+			 $("#posted").html("<em>Date Posted: " + json.STARTDATE + "</em>");					
+		 });
+	   }
+	}
+/* 
+*
+* Editor eventHandlers:
+*
+*/
+var HtmlMarkdown = function(){
+	 $("#html5").markdown({ 
+	  onShow: function(e){
+		 //hide buttons
+		 $("[data-handler=bootstrap-markdown-cmdItalic]").hide();
+		 $("[data-handler=bootstrap-markdown-cmdImage]").hide();
+		 $("[data-handler=bootstrap-markdown-cmdBold]").hide();
+		 $("[data-handler=bootstrap-markdown-cmdList]").hide();
+		 $("[data-handler=bootstrap-markdown-cmdHeading]").hide();
+		 $("[data-handler=bootstrap-markdown-cmdUrl]").hide();
+		// Date Range
+		if (jQuery().datepicker) {
+			$("input[name='STARTDATE']").datepicker({
+		  showOn: "button",
+		  buttonImage: "/images/calendar.png",
+		  buttonImageOnly: true,
+		  buttonText: 'Select a start date',
+		  changeMonth: true,
+		  changeYear: true,
+		  onClose: function( selectedDate ) {
+			$("input[name='STARTDATE']").datepicker( "option", "minDate", new Date());
+		  }, 
+		  beforeShow: function() {
+			  setTimeout(function(){
+				  $('.ui-datepicker').css('z-index', 100100);
+			  }, 0);
+		  },
+		  minDate: '0', // The min start date that can be selected, i.e. 30 days from the 'now'
+		  maxDate: '+1m'  // The max start date that can be selected, i.e. + 1 month, 1 week, and 1 days from 'now'
+		  //                       HR   MIN  SEC  MILLI 
+		  //new Date().getTime() + 24 * 60 * 60 * 1000)
+		}).datepicker("setDate", new Date());
+		$("input[name='ENDDATE']").datepicker({
+			  showOn: "button",
+			  buttonImage: "/images/calendar.png",
+			  buttonImageOnly: true,
+			  changeMonth: true,
+			  changeYear: true,
+			  onClose: function( selectedDate ) {
+				$("input[name='ENDDATE']").datepicker( "option", "maxDate", selectedDate );
+			  }, 
+			  beforeShow: function() {
+				  setTimeout(function(){
+					  $('.ui-datepicker').css('z-index', 100100);
+				  }, 0);
+			  },
+			  minDate: '+1m', // The min date that can be selected, i.e. 30 days from the 'now'
+			  maxDate: '+2m'  // The max date that can be selected, i.e. + 1 month, 1 week, and 1 days from 'now'
+		});			
+        				}
+    			  }
+    		});
+}
+var EditorMarkdown = function(){
+	$("input[name='STARTDATE']").datepicker({
+		  showOn: "button",
+		  buttonImage: "/images/calendar.png",
+		  buttonImageOnly: true,
+		  buttonText: 'Select a start date',
+		  changeMonth: true,
+		  changeYear: true,
+		  onClose: function( selectedDate ) {
+			$("input[name='STARTDATE']").datepicker( "option", "minDate", new Date());
+		  }, 
+		  beforeShow: function() {
+			  setTimeout(function(){
+				  $('.ui-datepicker').css('z-index', 100100);
+			  }, 0);
+		  },
+		  minDate: '0', // The min start date that can be selected, i.e. 30 days from the 'now'
+		  maxDate: '+1m'  // The max start date that can be selected, i.e. + 1 month, 1 week, and 1 days from 'now'
+	}).datepicker("setDate", new Date());
+	$("input[name='ENDDATE']").datepicker({
+		  showOn: "button",
+		  buttonImage: "/images/calendar.png",
+		  buttonImageOnly: true,
+		  changeMonth: true,
+		  changeYear: true,
+		  onClose: function( selectedDate ) {
+			$("input[name='ENDDATE']").datepicker( "option", "maxDate", selectedDate );
+		  }, 
+		  beforeShow: function() {
+			  setTimeout(function(){
+				  $('.ui-datepicker').css('z-index', 100100);
+			  }, 0);
+		  },
+		  minDate: '+1w', // The min date that can be selected, i.e. 30 days from the 'now'
+		  maxDate: '+2m'  // The max date that can be selected, i.e. + 1 month, 1 week, and 1 days from 'now'
+	});				   		 
+}
+var NewsValidation = function(){
+		  //Variables created without the keyword var, are always global, even if they are created inside a function.
+	var form = $('#editorForm');
+    var FormError = $('.alert-danger',form);
+   	var success = $('.alert-success',form);
+
+     form.validate({
+		focusInvalid: false, // do not focus the last invalid input
+		onkeyup: false,	
+		ignore: ".ignore", //required for hidden input validation ie: hiddenRecaptcha
+		rules:{
+			"TITLE": {
+           	 	required: true, 
+                rangelength:[15,100]				
+   	    	},
+   	    	"HTML": {
+   	   	    	required: true,
+   	   	   	    rangelength:[15,5000]
+   	    	},
+       	 	"AUTHLST": {
+          	 	 required: true
+			},
+			"ACTIVE": {
+				 required: {
+					depends: function() {
+						if(!$("#archive:checked"))
+							return true;
+						else
+							return false;
+					}
+				 }
+		   },
+			"STARTDATE": { 
+                required: true, 
+                HTH_dateUSA: true,
+                HTH_dateRange: ['<=',$('input[name="ENDDATE"]').val()]
+        	},
+			"ENDDATE": { 
+                required: true, 
+                HTH_dateUSA: true,
+                HTH_dateRange: ['>=',$('input[name="STARTDATE"]').val()]
+        	} 			
+    	},
+    	messages: { // custom messages for form validation input
+       		   "TITLE": {
+       	   		 	required: "The TITLE will also be displayed in notification area so make sure to be clear and concise. " +
+					"eg: Server Maintenance: Fri 5-7pm CT 08/28/2016"
+    	   	   },
+    	   	   "HTML": {
+					required: "The HTML secton is where the actual content is saved" 		 
+    	   	   },
+    	   	   "ACTIVE": {
+       	   		required: "Archive must be checked if news item is to be active on archive"
+    	   	   },
+			   "AUTHLST": {
+				required: "At least one type of user is required"
+			   },
+			    "STARTDATE": {
+        		required: "Start Date is required.",
+        		HTH_dateUSA: "Start Date must be a valid date in mm/dd/yyyy format.",
+        		HTH_dateRange: "Start Date cannot be before End Date"			
+            },
+			 "ENDDATE": {
+        		required: "End Date is required.",
+        		HTH_dateUSA: "End Date must be a valid date in mm/dd/yyyy format.",
+        		HTH_dateRange: "End Date cannot be before Start Date"			
+            }
+     	},
+     	showErrors: function(errorMap, errorList) {
+            // Clean up any tooltips for valid elements
+            $.each(this.validElements(), function (index, element) {
+            	element = $(element);
+                NoError_ToolTip(element);
+            });
+            // Create new tooltips for invalid elements
+            $.each(errorList, function (index, error) {
+                element = $(error.element);
+                message = error.message;
+                Error_ToolTip(element,message);
+            });
+        },  				
+		invalidHandler: function (event, validator) { //display error alert on form submit     
+        	success.hide();
+            $(document).scrollTop( $(".form-body").offset().top ); 
+      	},
+		 submitHandler: function () {
+			  
+			 }
+  	});
+	}	
+var editNews = function(){
+	var buttonValue;
+
+	$('button[type="submit"]').click(function(e){
+	   buttonValue = $(this).val();
+	});
+	
+	//add validation at later date
+	$("#editorForm").on("submit", function(){
+		
+		if(buttonValue === "edit"){
+		   alert("submit this until validation is implemented");
+		}
+		return false;
+	});
+}
+var AddNews = function(){
+	//add validation at later date
+	$("#editorForm").on("submit", function(){	 	
+	   var authlst = [];
+	   //for each checkbox checked in authlst
+		$('[name="AUTHLST"]:checked').each(function(i,e) {
+			authlst.push(e.value);
+		});
+	   //only join object if more than one checked
+       if(authlst.length > 1) 
+	       authlst = authlst.join(',');
+	   var authStr = authlst.toString();
+	    
+       //console.log(html);
+	   var html = $(".editorForm").find(".md-preview").html();
+
+	   var data = {USER : localProfile,  
+	    INSTANCE : "HTHACKNEY",  
+		PAGE : $('select[name="PAGE"]').val(), 
+		TITLE : $("input[name='TITLE']").val(), 
+		HTML : html,
+		STARTDATE : $("input[name='STARTDATE']").val(), 
+		ENDDATE : $("input[name='ENDDATE']").val(),
+		ARCHIVE : $("input[name='ARCHIVE']").val(), 
+		ACTIVE : $("input[name='ACTIVE']").val(), 
+		URGENT : $("input[name='URGENT']").val(), 
+	    AUTHLST :  authStr};
+		//console.log(data);
+	   $.ajax({
+		    type: "POST",
+           url:   "http://webservices.hthackney.com/web054S?callback=?",
+           data:  data,
+		   dataType:'jsonp'
+	   }).
+	   done(function(json){ 
+	   $("#newsForm .loading").removeClass("hidden");
+	 
+	   var data = {
+		USER : localProfile,  
+	    INSTANCE : "HTHACKNEY",  
+		FUNCTION : $('select[name="PAGE"]').val(), 
+		PKEY : json.PKEY, 
+	    AUTHLST :  authStr};
+		//console.log(data);
+	   $.ajax({
+		    type: "POST",
+           url:   "http://webservices.hthackney.com/web054UA?callback=?",
+           data:  data,
+		   dataType:'jsonp'
+	   }).
+	   done(function(json){
+		$("#editorForm input[type='text']").val('');
+		$("#editorForm input[type='checkbox']").val('');
+		$("#editorForm .md-input").val('');
+		$("#editorForm .md-preview").html('');
+		 setTimeout(function(){
+		$("#newsForm .loading").addClass("hidden");
+		$(".alert-success").show();
+		 }, 2000);
+		StorageNotifsLinks();
+	   });
+	   }).
+	   fail(function(){
+		   function bad(){
+		   $("#newsForm").html("<div class='h4 msg xs-small text-center' style='font-weight: 400;'>we're sorry!<br><br><br><br><span class='text-danger'>unfortunately this inquiry cannot be processed at this time." +
+		   "<br>please try again at a later time or give us a call at:</span><br><br>+1.800.406.1291</div><br><br><br><br><br><br>"+
+					'<div class="caption right">'+
+					'<a href="index.php" id="defaultactionbutton" class="btn btn-success">home&nbsp;<i class="fa fa-home"></i></a>'+
+					'</div>');
+		   }
+		   setTimeout(bad, 1200);
+	   });
+			return false;
+	 });	
+}
+var delNews = function(){
+	$('[data-toggle=confirmation-popout]').confirmation({ 
+		popout: true, 
+		singleton: true,
+		placement:'bottom', 
+		btnOkClass: 'btn-small btn-success mr5',
+		btnCancelClass: 'btn-small btn-warning',
+		onConfirm: function(){
+		if(this.context.id == "del"){
+		//delete news item
+			alert('delete successful');
+		}
+		}
+	});		
+}
+var VisitedNews = function(){
+	//trigger this on modal_news ready() in News.triggerNews()
+	var data = {USER:  localProfile, 
+                PKEY:  actualKey,
+	            INSTANCE: "HTHACKNEY"};
+	//console.log(data);
+	//alert(JSON.stringify(data));
+    $.ajax({
+	type: 'POST', // prefered to GET when updating records
+	url: 'http://webservices.hthackney.com/WEB054V?callback=?',  // RPG program in HTHREST library
+	data: data, // loaded above
+	contentType: "application/json; charset=utf-8",
+	dataType: "jsonp"}).
+	done(function(data){		 
+	   if(data.SUCCESS){  
+		   StorageNotifsLinks();
+		    
+		if(urgentAhrefs.length > 0){
+			//urgentArray = urgentAhrefs.split(",");
+			// var ahrefs = $(ahrefs).map(function() {
+			 // return $('<a href').append(this).html();  // Basically `.outerHTML()`
+		 // });
+			alert(urgentAhrefs.toString());
+		}  
+	   }
+	   else 
+		  $(".alert-danger").val(data.ERROR).show();
+	}).
+	fail(function(){
+	   $(".shell").html("<div class='h5 msg xs-small text-center' style='font-weight: 400;'><br>We're Sorry!<br><br><br><br><span class='text-danger'>Unfortunately this inquiry cannot be processed at this time." +
+	   "<br>Please try again at a later time or give us a call at:</span><br><br>+1.800.406.1291</div><br><br><br><br><br><br>"+
+				'<div class="caption right">'+
+				'<a href="index.php" id="defaultActionButton" class="btn btn-success">Home&nbsp;<i class="fa fa-home"></i></a>'+
+				'</div>');			 
+	});
+}
+var handleNews = function(){ 
+	$('#editorForm').on('click','.btn-primary', function(){   
+	 //toggle save btn //preview must be active 
+	 if($("#upd").hasClass("disabled")){
+		$("#upd").removeClass("disabled");
+	 }
+	 else
+		$("#upd").addClass("disabled");
+	});
+	 //NewsValidation();
+ }
+ //lets force a reload of notifs when user is idle for 30mins
+ //http://stackoverflow.com/questions/667555/detecting-idle-time-in-javascript-elegantly
+var startIdler = function(){
+	// use jquery-idle-detect.js script below
+	$(window).on('idle:start', function(){
+	//start your prefetch etc here...
+});
+
+	$(window).on('idle:stop', function(){
+	//stop your prefetch etc here...
+	});
+ }
+var handleNewsfeed = function(){
+	 handleNews();
+	//need to inject inside plugin somehow: see newsfeed.js for starters
+	$('.modal').on('focus', ".dp:not(.hasDatepicker)", function(e){
+		var dater = $(this).datepicker();
+		var nodater = $('.hasDatePicker').not(dater);
+		nodater.datepicker('destroy');
+   });
+}
+var toggleEditor = function(){
+	 var toggle = true;
+	 $(".cmn-toggle-round").change(function() {
+		 if(toggle){
+			 $(".editorForm").addClass('hidden');
+			 $(".newsForm").removeClass('hidden');
+			 toggle = false;
+		 }
+		 else{
+			 $(".newsForm").addClass('hidden');
+			 $(".editorForm").removeClass('hidden');
+			 toggle = true;
+		}
+		
+	  return false;
+	});
+}
+/*
+*
+*News app section
+*
+*/
+    return {
+
+        //on login. If user leaves session open. it will update notifs after midnight
+        initProfile: function (user, edit) {
+		        if(user.length > 0){
+                    localStorage.setItem('profile', user);
+					localProfile = localStorage.getItem('profile');
+					localStorage.setItem('editor', edit);
+					editor = localStorage.getItem('editor');
+				
+					if(localProfile){						
+						if (myNewsKey != $.cookie('latestNewsKey') || empty(myNewsKey)){ 		
+							UpdateMyCookie();	
+						    StorageNotifsLinks();
+				        }
+					}
+				}        			
+	    },  
+		triggerNotifs: function(user, pathInstance){	   
+		    //set user profile
+		    if((empty(localProfile) && !empty(user)) || localProfile !== user){
+				 SetProfile(user);
+			}
+			
+			if(localProfile){
+				functionCode = pathInstance;
+
+				//ensures news gets updated when user leaves session open or changes tabs
+				if(empty(notifs) || empty($.cookie('latestNewsKey')) || empty(myNewsKey) || $.cookie('latestNewsKey') !== myNewsKey){
+					UpdateMyCookie();	
+					StorageNotifsLinks();							
+				}	
+				else{
+				//Only displays notifs when info is updated				
+				HtmlNotifs();
+                }				
+			}   		
+		},
+		eventNotifs: function(user){		   
+			if(localProfile === user){        
+			   startIdler();
+			} 		
+		},
+		destroyStorage: function(){
+			sessionStorage.clear();
+			localStorage.clear();
+		},	  
+		eventEditor: function(){
+			if(editor === "Y"){		
+	            $("#newsForm .slides").removeClass("hidden");
+				NewsValidation();
+				//always two feeds in modal_news editor & user feed
+				if($('.feed').length > 2){
+					$("#editorForm").removeClass("hidden");
+					EditorMarkdown();
+					handleNewsfeed();
+					AddNews();
+				}
+				else{
+					HtmlMarkdown();
+					handleNews();
+				}
+				//CRUD events
+				toggleEditor();
+			    editNews();
+				delNews();
+			}
+		},
+		triggerNews: function(pkey){						
+			actualKey = pkey;	
+			//display modal_news content
+			HtmlModalNews();
+			//WBPCHANG VISTED = "Y" 
+			VisitedNews();
+		},
+		triggerNewsfeed: function(user){
+			
+		}
+    }; 
+    function hasCookies() {
+	    return (navigator.cookieEnabled);
+	}	
+	function setCookie(name, value, minutes) {
+		var date = new Date();
+		var m = minutes;
+		date.setTime(date.getTime() + (m * 60 * 1000));
+		$.cookie( name, value, { expires: date });
+	}	
+	function empty(e) {
+	  switch (e) {
+		case "":
+		case 0:
+		case "0":
+		case null:
+		case false:
+		case typeof this == "undefined":
+		  return true;
+		default:
+		  return false;
+	}
+}
+  
+}();    
+
+String.prototype.dotdotdot = function(len) {
+	if(this.length > len){
+		var temp = this.substr(0, len);
+		temp = $.trim(temp);
+		temp = temp + "...";
+		return temp;
+	}
+	else
+		return $.trim(this);
+};
+            

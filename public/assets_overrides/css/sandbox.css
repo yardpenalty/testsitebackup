@@ -1,0 +1,7 @@
+/*****Tinkering area**********/
+input[type="radio"]{margin-right: 2px;}
+.btm_right{
+	position: relative;
+	top: -3px;
+	maring-left: 5px;
+}
